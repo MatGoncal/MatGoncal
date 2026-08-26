@@ -13,15 +13,26 @@ I build payment systems: idempotent webhooks, FX rate locks, multi-currency bala
 | [checkout-portal-next](https://github.com/MatGoncal/checkout-portal-next) | Next 15 · TanStack Query | Checkout + webhook simulator |
 | [payment-api-nest](https://github.com/MatGoncal/payment-api-nest) | NestJS 11 · Prisma · BullMQ | Same contract, Nest side |
 
+Pick any repo — the same OpenAPI 3.1 spec lives in `Docs/specs/`.
+
+One contract, two backend implementations, one frontend on each:
+
 ```mermaid
-graph LR
+graph TB
   Contract["API_CONTRACT.md / OpenAPI 3.1"]
-  Laravel["pix-wallet-api"]
-  Nest["payment-api-nest"]
-  Vue["partner-dashboard-vue"]
-  Next["checkout-portal-next"]
-  Contract --> Laravel
-  Contract --> Nest
+
+  subgraph FE["Frontends"]
+    Vue["partner-dashboard-vue<br/>Vue 3"]
+    Next["checkout-portal-next<br/>Next 15"]
+  end
+
+  subgraph BE["Backends · same contract, two stacks"]
+    Laravel["pix-wallet-api<br/>Laravel 12"]
+    Nest["payment-api-nest<br/>NestJS 11"]
+  end
+
+  Contract -.->|implements| Laravel
+  Contract -.->|implements| Nest
   Vue -->|HTTP| Laravel
   Next -->|HTTP| Nest
 ```
@@ -45,4 +56,5 @@ Money is always **integer minor units** — never float.
 
 ## Contact
 
-GitHub: [MatGoncal](https://github.com/MatGoncal)
+- LinkedIn: [matheusgoncalvesweb](https://www.linkedin.com/in/matheusgoncalvesweb/)
+- Email: matheus.gabryel10@gmail.com
