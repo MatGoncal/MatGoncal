@@ -18,8 +18,10 @@ Pick any contract repo — the same OpenAPI 3.1 spec lives in `Docs/specs/`.
 The Go provider is a standalone PSP simulator: it does **not** implement
 `POST /v1/payments`.
 
-One contract, two backend implementations, one frontend on each; the Go
-service only delivers the signed provider webhook:
+One contract, two backend implementations, one frontend on each.
+Laravel and Nest `POST /v1/payments` call Go `POST /v1/charges` for the QR.
+The signed webhook on `/v1/webhooks/payment` is Go `simulate` (HMAC `t,v1`) —
+the Next `POST /api/simulator/fire` path is a parallel demo, not the PSP flow:
 
 ```mermaid
 graph TB
@@ -43,8 +45,10 @@ graph TB
   Contract -.->|implements| Nest
   Vue -->|HTTP| Laravel
   Next -->|HTTP| Nest
-  Go -->|signed webhook| Laravel
-  Go -->|signed webhook| Nest
+  Laravel -->|POST /v1/charges| Go
+  Nest -->|POST /v1/charges| Go
+  Go -->|simulate HMAC webhook| Laravel
+  Go -->|simulate HMAC webhook| Nest
 ```
 
 ### Canonical endpoints
