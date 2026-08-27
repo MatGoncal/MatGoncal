@@ -2,7 +2,7 @@
 
 **Backend Engineer · Payments · PIX, cross-border, split**
 
-I build payment systems: idempotent webhooks, FX rate locks, multi-currency balances, and settlement splits. Portfolio is a shared **AcmePay** API contract implemented across four stacks.
+I build payment systems: idempotent webhooks, FX rate locks, multi-currency balances, and settlement splits. Portfolio is a shared **AcmePay** API contract implemented across four stacks, plus a Go PSP simulator that signs the same webhook.
 
 ## AcmePay ecosystem
 
@@ -12,10 +12,14 @@ I build payment systems: idempotent webhooks, FX rate locks, multi-currency bala
 | [partner-dashboard-vue](https://github.com/MatGoncal/partner-dashboard-vue) | Vue 3 · Pinia · Vite | Partner dashboard |
 | [checkout-portal-next](https://github.com/MatGoncal/checkout-portal-next) | Next 15 · TanStack Query | Checkout + webhook simulator |
 | [payment-api-nest](https://github.com/MatGoncal/payment-api-nest) | NestJS 11 · Prisma · BullMQ | Same contract, Nest side |
+| [fake-pix-provider](https://github.com/MatGoncal/fake-pix-provider) | Go 1.23 · stdlib | Synthetic PIX PSP (simulator, not the partner API) |
 
-Pick any repo — the same OpenAPI 3.1 spec lives in `Docs/specs/`.
+Pick any contract repo — the same OpenAPI 3.1 spec lives in `Docs/specs/`.
+The Go provider is a standalone PSP simulator: it does **not** implement
+`POST /v1/payments`.
 
-One contract, two backend implementations, one frontend on each:
+One contract, two backend implementations, one frontend on each; the Go
+service only delivers the signed provider webhook:
 
 ```mermaid
 graph TB
@@ -31,10 +35,16 @@ graph TB
     Nest["payment-api-nest<br/>NestJS 11"]
   end
 
+  subgraph SIM["PSP simulator · not the partner contract"]
+    Go["fake-pix-provider<br/>Go 1.23"]
+  end
+
   Contract -.->|implements| Laravel
   Contract -.->|implements| Nest
   Vue -->|HTTP| Laravel
   Next -->|HTTP| Nest
+  Go -->|signed webhook| Laravel
+  Go -->|signed webhook| Nest
 ```
 
 ### Canonical endpoints
