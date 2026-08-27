@@ -43,10 +43,11 @@ graph TB
 - `POST /v1/webhooks/payment` — idempotent provider events
 - `POST /v1/fx/quotes` — rate lock (5 min)
 - `GET /v1/balances` — multi-currency wallet
-- `POST /v1/payouts` — async payout (debit on confirm)
+- `POST /v1/payouts` — async payout (reserve `available → pending` on create)
 - `POST /v1/payments/{id}/splits` — platform / seller / affiliate
 
-Money is always **integer minor units** — never float.
+Money is always **integer minor units** — never float. Payout holds live in
+`pending` until the job confirms; `available + pending` must match the ledger.
 
 ## Focus
 
