@@ -18,37 +18,39 @@ Pick any contract repo — the same OpenAPI 3.1 spec lives in `Docs/specs/`.
 The Go provider is a standalone PSP simulator: it does **not** implement
 `POST /v1/payments`.
 
-One contract, two backend implementations, one frontend on each.
-Laravel and Nest `POST /v1/payments` call Go `POST /v1/charges` for the QR.
-The signed webhook on `/v1/webhooks/payment` is Go `simulate` (HMAC `t,v1`) —
-the Next `POST /api/simulator/fire` path is a parallel demo, not the PSP flow:
+One contract, two stacks — run **one**. Each frontend talks only to its API.
+Both APIs call Go `POST /v1/charges` for the QR; Go `simulate` posts the HMAC
+webhook to `/v1/webhooks/payment`. Next `POST /api/simulator/fire` is a
+parallel demo, not the PSP flow.
 
 ```mermaid
-graph TB
+flowchart TB
   Contract["API_CONTRACT.md / OpenAPI 3.1"]
 
-  subgraph FE["Frontends"]
-    Vue["partner-dashboard-vue<br/>Vue 3"]
-    Next["checkout-portal-next<br/>Next 15"]
+  subgraph stacks["Same contract · pick one stack"]
+    direction LR
+
+    subgraph pathA["Path A"]
+      direction TB
+      Vue["partner-dashboard-vue<br/>Vue 3"]
+      Laravel["pix-wallet-api<br/>Laravel 12"]
+      Vue -->|"HTTP /v1"| Laravel
+    end
+
+    subgraph pathB["Path B"]
+      direction TB
+      Next["checkout-portal-next<br/>Next 15"]
+      Nest["payment-api-nest<br/>NestJS 11"]
+      Next -->|"HTTP /v1"| Nest
+    end
   end
 
-  subgraph BE["Backends · same contract, two stacks"]
-    Laravel["pix-wallet-api<br/>Laravel 12"]
-    Nest["payment-api-nest<br/>NestJS 11"]
-  end
-
-  subgraph SIM["PSP simulator · not the partner contract"]
-    Go["fake-pix-provider<br/>Go 1.23"]
-  end
+  Go["fake-pix-provider · Go 1.23<br/>PSP simulator — not the partner API<br/>POST /v1/charges → QR · simulate HMAC webhook"]
 
   Contract -.->|implements| Laravel
   Contract -.->|implements| Nest
-  Vue -->|HTTP| Laravel
-  Next -->|HTTP| Nest
-  Laravel -->|POST /v1/charges| Go
-  Nest -->|POST /v1/charges| Go
-  Go -->|simulate HMAC webhook| Laravel
-  Go -->|simulate HMAC webhook| Nest
+  Laravel --> Go
+  Nest --> Go
 ```
 
 ### Canonical endpoints
