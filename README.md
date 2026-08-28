@@ -63,6 +63,25 @@ graph TB
 Money is always **integer minor units** — never float. Payout holds live in
 `pending` until the job confirms; `available + pending` must match the ledger.
 
+### Local demo
+
+Pick **one** stack — [pix-wallet-api](https://github.com/MatGoncal/pix-wallet-api)
+Sail **or** [payment-api-nest](https://github.com/MatGoncal/payment-api-nest)
+compose. Both publish [fake-pix-provider](https://github.com/MatGoncal/fake-pix-provider)
+on `:8080`. `git pull` and `up --build` so the Go image has Postgres.
+
+Create a PIX, restart the PSP: `GET /v1/charges/by-payment/{id}` still 200; the
+outbox retries the webhook. Stop the PSP → **502**; retry the same
+`Idempotency-Key` → same payment `id`.
+
+[partner-dashboard-vue](https://github.com/MatGoncal/partner-dashboard-vue)
+defaults to `demo-partner-key` (Nest / mock). Against Laravel set
+`VITE_API_KEY=acmepay_demo_key_change_me` (and proxy `/v1` via
+`VITE_MOCK_TARGET=http://localhost`). The UI sends `Idempotency-Key`
+(`pay:{external_id}` or a UUID in memory), so double-submit and a 502 retry
+reuse one charge. Checkout lives in
+[checkout-portal-next](https://github.com/MatGoncal/checkout-portal-next).
+
 ## Focus
 
 - Spec-driven delivery (`AGENTS.md` + `Docs/specs` before code)
